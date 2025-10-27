@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: pawtrack-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pawtrack_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./pawtrack_backup.sql:/docker-entrypoint-initdb.d/pawtrack_backup.sql
+
+  backend:
+    build: ./PawTrack(backend)
+    container_name: pawtrack-backend
+    restart: always
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pawtrack_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./pawtrack(frontend)
+    container_name: pawtrack-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+networks:
+  default:
+    driver: bridge
